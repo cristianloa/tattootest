@@ -1,1 +1,591 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Tatuajes</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <script>
+    // Configuración de Tailwind para habilitar modo oscuro
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <style>
+    /* Ocultar el texto por defecto del input file y personalizar el botón */
+    input[type="file"] {
+      display: none;
+    }
+    .custom-file-upload {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #e5e7eb;
+      color: #111827;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out, background-color 0.2s;
+    }
+    .dark .custom-file-upload {
+      background-color: #4b5563;
+      color: #f3f4f6;
+    }
+    .custom-file-upload:hover {
+      background-color: #d1d5db;
+      transform: scale(1.05);
+    }
+    .dark .custom-file-upload:hover {
+      background-color: #6b7280;
+      transform: scale(1.05);
+    }
+    /* Estilo para sliders en modo oscuro */
+    input[type="range"] {
+      accent-color: #f97316; /* Orange-500 */
+    }
+    /* Estilo para botones con animación */
+    .animated-button {
+      transition: transform 0.2s ease-in-out, background-color 0.2s;
+    }
+    .animated-button:hover {
+      transform: scale(1.05);
+    }
+    /* Estilo para botón flotante */
+    #clearButton {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 50;
+    }
+    @media (max-width: 640px) {
+      #clearButton {
+        bottom: 10px;
+        right: 10px;
+        padding: 8px 12px;
+        font-size: 0.875rem;
+      }
+    }
+    /* Estilo para texto introductorio en el lienzo */
+    #introText {
+      animation: pulse 2s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.02); opacity: 0.9; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-black text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen p-4">
+  <!-- Contenedor principal con ancho completo -->
+  <div class="container mx-auto w-full flex flex-col lg:flex-row gap-6">
+    <!-- Columna 1: Controles de personalización y pedido (25%) -->
+    <div class="w-full lg:w-1/4 flex flex-col gap-6">
+      <!-- Toggle para modo oscuro -->
+      <div class="flex justify-end">
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="darkModeToggle" class="sr-only peer">
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-500 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+          <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Modo Oscuro</span>
+        </label>
+      </div>
 
+      <!-- Paso 1: Personalización -->
+      <div id="customizationStep" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg w-full">
+        <h1 class="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">¡Crea tu Tatuaje Épico!</h1>
+        
+        <!-- Input para subir la fotografía del usuario -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sube tu foto (¡muéstranos dónde va el arte!):</label>
+          <label for="photoInput" class="custom-file-upload mt-1">
+            <i class="fas fa-camera mr-2"></i> ¡Elige tu Foto Épica!
+          </label>
+          <input type="file" id="photoInput" accept="image/*">
+        </div>
+        
+        <!-- Input para subir el diseño del tatuaje -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sube tu diseño (¡el alma de tu tatuaje!):</label>
+          <label for="tattooInput" class="custom-file-upload mt-1">
+            <i class="fas fa-paint-brush mr-2"></i> ¡Carga tu Diseño Brutal!
+          </label>
+          <input type="file" id="tattooInput" accept="image/*">
+        </div>
+        
+        <!-- Selección de modo de quitar fondo -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quitar fondo del diseño:</label>
+          <select id="removeBgMode" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+            <option value="none">Ninguno</option>
+            <option value="basic">Básico (Umbral fijo)</option>
+            <option value="sensitive">Sensible (Umbral más estricto)</option>
+            <option value="adaptive">Adaptativo (Basado en brillo)</option>
+          </select>
+        </div>
+        
+        <!-- Control para ajustar el umbral de fondo -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Umbral de fondo (Básico/Sensible):</label>
+          <input type="range" id="thresholdSlider" min="150" max="255" step="1" value="200" class="mt-1 block w-full">
+          <span id="thresholdValue" class="text-sm text-gray-500 dark:text-gray-400">200</span>
+        </div>
+        
+        <!-- Control para ajustar el tamaño del tatuaje -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tamaño del tatuaje (¡hazlo tuyo!):</label>
+          <input type="range" id="sizeSlider" min="0.5" max="2.0" step="0.1" value="1.0" class="mt-1 block w-full">
+          <span id="sizeValue" class="text-sm text-gray-500 dark:text-gray-400">100%</span>
+        </div>
+        
+        <!-- Control para ajustar el ancho del tatuaje -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ancho del tatuaje (¡estíralo a tu gusto!):</label>
+          <input type="range" id="widthSlider" min="0.5" max="2.0" step="0.1" value="1.0" class="mt-1 block w-full">
+          <span id="widthValue" class="text-sm text-gray-500 dark:text-gray-400">100%</span>
+        </div>
+        
+        <!-- Control para ajustar el alto del tatuaje -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Alto del tatuaje (¡ajústalo como quieras!):</label>
+          <input type="range" id="heightSlider" min="0.5" max="2.0" step="0.1" value="1.0" class="mt-1 block w-full">
+          <span id="heightValue" class="text-sm text-gray-500 dark:text-gray-400">100%</span>
+        </div>
+        
+        <!-- Control para rotar el tatuaje -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rotar diseño (¡gíralo con estilo!):</label>
+          <input type="range" id="rotationSlider" min="0" max="360" step="1" value="0" class="mt-1 block w-full">
+          <span id="rotationValue" class="text-sm text-gray-500 dark:text-gray-400">0°</span>
+        </div>
+        
+        <!-- Botones -->
+        <div class="flex space-x-2">
+          <button id="exportButton" class="animated-button flex-1 bg-orange-500 dark:bg-orange-600 text-white py-2 px-4 rounded hover:bg-orange-600 dark:hover:bg-orange-700 flex items-center justify-center">
+            <i class="fas fa-download mr-2"></i> ¡Guarda tu Obra Maestra!
+          </button>
+          <button id="nextStepButton" class="animated-button flex-1 bg-orange-500 dark:bg-orange-600 text-white py-2 px-4 rounded hover:bg-orange-600 dark:hover:bg-orange-700 flex items-center justify-center">
+            <i class="fas fa-arrow-right mr-2"></i> ¡A por el Pedido!
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 2: Detalles del Pedido -->
+      <div id="orderStep" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg w-full hidden">
+        <h2 class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">¡Finaliza tu Pedido Épico!</h2>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tamaño del tatuaje (aprox.):</label>
+          <select id="sizeInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+            <option value="Pequeño">Pequeño</option>
+            <option value="Mediano">Mediano</option>
+            <option value="Grande">Grande</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estilo:</label>
+          <select id="styleInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+            <option value="Negro y gris">Negro y gris</option>
+            <option value="Color">Color</option>
+            <option value="Minimalista">Minimalista</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre:</label>
+          <input type="text" id="nameInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500" placeholder="Tu nombre épico">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo electrónico:</label>
+          <input type="email" id="emailInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500" placeholder="tu@correo.com">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono:</label>
+          <input type="tel" id="phoneInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500" placeholder="123-456-7890">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notas adicionales:</label>
+          <textarea id="notesInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500" placeholder="¡Cuéntanos tus ideas locas!"></textarea>
+        </div>
+        
+        <!-- Botones -->
+        <div class="flex space-x-2">
+          <button id="backButton" class="animated-button flex-1 bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-600 dark:hover:bg-gray-700 flex items-center justify-center">
+            <i class="fas fa-arrow-left mr-2"></i> ¡Volver a Jugar!
+          </button>
+          <button id="orderButton" class="animated-button flex-1 bg-orange-500 dark:bg-orange-600 text-white py-2 px-4 rounded hover:bg-orange-600 dark:hover:bg-orange-700 flex items-center justify-center">
+            <i class="fas fa-check-circle mr-2"></i> ¡Hazlo Real!
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Columna 2: Contenedor para el lienzo (75%) -->
+    <div class="w-full lg:w-3/4 flex justify-center relative">
+      <div id="canvasContainer" class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-4 w-full max-w-[800px] relative">
+        <!-- Texto introductorio -->
+        <div id="introText" class="absolute inset-0 flex items-center justify-center text-center text-4xl font-bold text-gray-900 dark:text-orange-500 hidden">
+          ¡Crea tu Tatuaje Personalizado Épico!
+        </div>
+      </div>
+      <!-- Botón flotante para limpiar diseño -->
+      <button id="clearButton" class="animated-button bg-red-500 dark:bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-600 dark:hover:bg-red-700 flex items-center justify-center">
+        <i class="fas fa-trash mr-2"></i> ¡Borra y Empieza de Nuevo!
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let photoImg, tattooImg, processedTattooImg;
+    let tattooX, tattooY; // Posición del tatuaje
+    let tattooWidth, tattooHeight; // Dimensiones del tatuaje
+    let isDragging = false; // Estado de arrastre
+    let offsetX, offsetY; // Desplazamiento para arrastre
+    let tattooScale = 1.0; // Escala base del tatuaje
+    let widthScale = 1.0; // Escala de ancho
+    let heightScale = 1.0; // Escala de alto
+    let rotation = 0; // Rotación en grados
+    let removeBgMode = 'none'; // Modo de quitar fondo
+    let bgThreshold = 200; // Umbral de fondo inicial
+
+    function preload() {
+      // Cargar imágenes cuando se suben
+      const photoInput = document.getElementById('photoInput');
+      const tattooInput = document.getElementById('tattooInput');
+      const removeBgModeSelect = document.getElementById('removeBgMode');
+      const thresholdSlider = document.getElementById('thresholdSlider');
+      const thresholdValue = document.getElementById('thresholdValue');
+
+      photoInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          photoImg = loadImage(URL.createObjectURL(file));
+        }
+      });
+
+      tattooInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          tattooImg = loadImage(URL.createObjectURL(file), () => {
+            // Procesar la imagen inicial
+            processTattooImage();
+            // Inicializar posición del tatuaje al centro
+            let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
+            tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
+            tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+            tattooX = (800 - tattooWidth) / 2;
+            tattooY = (800 - tattooHeight) / 2;
+          });
+        }
+      });
+
+      // Actualizar modo de quitar fondo
+      removeBgModeSelect.addEventListener('change', (event) => {
+        removeBgMode = event.target.value;
+        if (tattooImg) {
+          processTattooImage();
+          // Recalcular dimensiones
+          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
+          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
+          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+          tattooX = constrain(tattooX, 0, 800 - tattooWidth);
+          tattooY = constrain(tattooY, 0, 800 - tattooHeight);
+        }
+      });
+
+      // Actualizar umbral de fondo
+      thresholdSlider.addEventListener('input', (event) => {
+        bgThreshold = parseInt(event.target.value);
+        thresholdValue.textContent = bgThreshold;
+        if (tattooImg && (removeBgMode === 'basic' || removeBgMode === 'sensitive')) {
+          processTattooImage();
+          // Recalcular dimensiones
+          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
+          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
+          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+          tattooX = constrain(tattooX, 0, 800 - tattooWidth);
+          tattooY = constrain(tattooY, 0, 800 - tattooHeight);
+        }
+      });
+    }
+
+    function processTattooImage() {
+      if (!tattooImg) return;
+
+      // Crear una copia de la imagen del tatuaje
+      processedTattooImg = createGraphics(tattooImg.width, tattooImg.height);
+      processedTattooImg.image(tattooImg, 0, 0);
+
+      if (removeBgMode === 'none') {
+        processedTattooImg = tattooImg; // Usar imagen original
+        return;
+      }
+
+      processedTattooImg.loadPixels();
+
+      if (removeBgMode === 'basic' || removeBgMode === 'sensitive') {
+        // Usar umbral fijo (200 para básico, 230 para sensible)
+        let threshold = removeBgMode === 'basic' ? bgThreshold : Math.min(bgThreshold, 230);
+        for (let i = 0; i < processedTattooImg.pixels.length; i += 4) {
+          let r = processedTattooImg.pixels[i];
+          let g = processedTattooImg.pixels[i + 1];
+          let b = processedTattooImg.pixels[i + 2];
+          if (r > threshold && g > threshold && b > threshold) {
+            processedTattooImg.pixels[i + 3] = 0; // Hacer transparente
+          }
+        }
+      } else if (removeBgMode === 'adaptive') {
+        // Calcular brillo promedio de la imagen
+        let totalBrightness = 0;
+        let pixelCount = 0;
+        for (let i = 0; i < processedTattooImg.pixels.length; i += 4) {
+          let r = processedTattooImg.pixels[i];
+          let g = processedTattooImg.pixels[i + 1];
+          let b = processedTattooImg.pixels[i + 2];
+          totalBrightness += (r + g + b) / 3;
+          pixelCount++;
+        }
+        let avgBrightness = totalBrightness / pixelCount;
+        let adaptiveThreshold = avgBrightness * 0.9; // Umbral al 90% del brillo promedio
+
+        // Aplicar umbral adaptativo y suavizado de bordes
+        for (let x = 0; x < processedTattooImg.width; x++) {
+          for (let y = 0; y < processedTattooImg.height; y++) {
+            let i = (y * processedTattooImg.width + x) * 4;
+            let r = processedTattooImg.pixels[i];
+            let g = processedTattooImg.pixels[i + 1];
+            let b = processedTattooImg.pixels[i + 2];
+            let brightness = (r + g + b) / 3;
+            if (brightness > adaptiveThreshold) {
+              // Verificar vecinos para suavizado
+              let isEdge = false;
+              for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                  if (dx === 0 && dy === 0) continue;
+                  let nx = x + dx;
+                  let ny = y + dy;
+                  if (nx >= 0 && nx < processedTattooImg.width && ny >= 0 && ny < processedTattooImg.height) {
+                    let ni = (ny * processedTattooImg.width + nx) * 4;
+                    let nr = processedTattooImg.pixels[ni];
+                    let ng = processedTattooImg.pixels[ni + 1];
+                    let nb = processedTattooImg.pixels[ni + 2];
+                    let nBrightness = (nr + ng + nb) / 3;
+                    if (nBrightness <= adaptiveThreshold) {
+                      isEdge = true;
+                      break;
+                    }
+                  }
+                }
+                if (isEdge) break;
+              }
+              if (!isEdge) {
+                processedTattooImg.pixels[i + 3] = 0; // Hacer transparente si no es borde
+              }
+            }
+          }
+        }
+      }
+      processedTattooImg.updatePixels();
+    }
+
+    function setup() {
+      let canvas = createCanvas(800, 800);
+      canvas.parent('canvasContainer');
+
+      // Toggle para modo oscuro
+      const darkModeToggle = document.getElementById('darkModeToggle');
+      darkModeToggle.addEventListener('change', () => {
+        document.documentElement.classList.toggle('dark');
+      });
+      
+      // Actualizar tamaño del tatuaje
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+      sizeSlider.addEventListener('input', (event) => {
+        tattooScale = parseFloat(event.target.value);
+        sizeValue.textContent = `${Math.round(tattooScale * 100)}%`;
+        if (tattooImg) {
+          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
+          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
+          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+          tattooX = constrain(tattooX, 0, 800 - tattooWidth);
+          tattooY = constrain(tattooY, 0, 800 - tattooHeight);
+        }
+      });
+
+      // Actualizar ancho del tatuaje
+      const widthSlider = document.getElementById('widthSlider');
+      const widthValue = document.getElementById('widthValue');
+      widthSlider.addEventListener('input', (event) => {
+        widthScale = parseFloat(event.target.value);
+        widthValue.textContent = `${Math.round(widthScale * 100)}%`;
+        if (tattooImg) {
+          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
+          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
+          tattooX = constrain(tattooX, 0, 800 - tattooWidth);
+        }
+      });
+
+      // Actualizar alto del tatuaje
+      const heightSlider = document.getElementById('heightSlider');
+      const heightValue = document.getElementById('heightValue');
+      heightSlider.addEventListener('input', (event) => {
+        heightScale = parseFloat(event.target.value);
+        heightValue.textContent = `${Math.round(heightScale * 100)}%`;
+        if (tattooImg) {
+          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
+          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+          tattooY = constrain(tattooY, 0, 800 - tattooHeight);
+        }
+      });
+
+      // Actualizar rotación del tatuaje
+      const rotationSlider = document.getElementById('rotationSlider');
+      const rotationValue = document.getElementById('rotationValue');
+      rotationSlider.addEventListener('input', (event) => {
+        rotation = parseFloat(event.target.value);
+        rotationValue.textContent = `${Math.round(rotation)}°`;
+      });
+
+      // Botón para limpiar diseño
+      const clearButton = document.getElementById('clearButton');
+      clearButton.addEventListener('click', () => {
+        tattooImg = null;
+        processedTattooImg = null;
+        tattooScale = 1.0;
+        widthScale = 1.0;
+        heightScale = 1.0;
+        rotation = 0;
+        removeBgMode = 'none';
+        bgThreshold = 200;
+        sizeSlider.value = 1.0;
+        widthSlider.value = 1.0;
+        heightSlider.value = 1.0;
+        rotationSlider.value = 0;
+        sizeValue.textContent = '100%';
+        widthValue.textContent = '100%';
+        heightValue.textContent = '100%';
+        rotationValue.textContent = '0°';
+        removeBgModeSelect.value = 'none';
+        thresholdSlider.value = 200;
+        thresholdValue.textContent = '200';
+        tattooInput.value = ''; // Limpiar el input file
+      });
+
+      // Exportar imagen
+      const exportButton = document.getElementById('exportButton');
+      exportButton.addEventListener('click', () => {
+        saveCanvas('simulacion_tatuaje', 'png');
+      });
+
+      // Navegación entre pasos
+      const nextStepButton = document.getElementById('nextStepButton');
+      const backButton = document.getElementById('backButton');
+      const customizationStep = document.getElementById('customizationStep');
+      const orderStep = document.getElementById('orderStep');
+
+      nextStepButton.addEventListener('click', () => {
+        if (!photoImg) {
+          alert('Por favor, sube una fotografía antes de continuar.');
+          return;
+        }
+        customizationStep.classList.add('hidden');
+        orderStep.classList.remove('hidden');
+      });
+
+      backButton.addEventListener('click', () => {
+        orderStep.classList.add('hidden');
+        customizationStep.classList.remove('hidden');
+      });
+
+      // Realizar pedido (solicitar cita)
+      const orderButton = document.getElementById('orderButton');
+      orderButton.addEventListener('click', () => {
+        const size = document.getElementById('sizeInput').value;
+        const style = document.getElementById('styleInput').value;
+        const name = document.getElementById('nameInput').value;
+        const email = document.getElementById('emailInput').value;
+        const phone = document.getElementById('phoneInput').value;
+        const notes = document.getElementById('notesInput').value;
+        const bgRemoved = removeBgMode !== 'none' ? `Sí (${removeBgMode}, Umbral: ${bgThreshold})` : 'No';
+
+        if (!name || !email || !phone) {
+          alert('Por favor, completa todos los campos requeridos.');
+          return;
+        }
+
+        const orderDetails = `
+          Solicitud de Cita Realizada:
+          - Tamaño: ${size}
+          - Estilo: ${style}
+          - Escala del diseño: ${Math.round(tattooScale * 100)}%
+          - Escala de ancho: ${Math.round(widthScale * 100)}%
+          - Escala de alto: ${Math.round(heightScale * 100)}%
+          - Rotación: ${Math.round(rotation)}°
+          - Fondo removido: ${bgRemoved}
+          - Nombre: ${name}
+          - Correo: ${email}
+          - Teléfono: ${phone}
+          - Notas: ${notes}
+        `;
+        alert(orderDetails);
+      });
+    }
+
+    function draw() {
+      background(220);
+      
+      // Mostrar texto introductorio si no hay imagen
+      const introText = document.getElementById('introText');
+      if (!photoImg) {
+        introText.classList.remove('hidden');
+      } else {
+        introText.classList.add('hidden');
+        // Dibujar la fotografía
+        image(photoImg, 0, 0, 800, 800);
+      }
+
+      // Dibujar el tatuaje en su posición con rotación
+      if (processedTattooImg) {
+        push();
+        translate(tattooX + tattooWidth / 2, tattooY + tattooHeight / 2);
+        rotate(radians(rotation));
+        imageMode(CENTER);
+        image(processedTattooImg, 0, 0, tattooWidth, tattooHeight);
+        pop();
+      }
+    }
+
+    function mousePressed() {
+      // Ajustar la detección de clics considerando la rotación
+      if (processedTattooImg) {
+        // Transformar las coordenadas del ratón al sistema rotado
+        let centerX = tattooX + tattooWidth / 2;
+        let centerY = tattooY + tattooHeight / 2;
+        let angle = -radians(rotation);
+        let mx = mouseX - centerX;
+        let my = mouseY - centerY;
+        let rotatedX = mx * cos(angle) - my * sin(angle);
+        let rotatedY = mx * sin(angle) + my * cos(angle);
+        let localX = rotatedX + tattooWidth / 2;
+        let localY = rotatedY + tattooHeight / 2;
+
+        if (localX >= 0 && localX <= tattooWidth && localY >= 0 && localY <= tattooHeight) {
+          isDragging = true;
+          offsetX = mouseX - tattooX;
+          offsetY = mouseY - tattooY;
+        }
+      }
+    }
+
+    function mouseDragged() {
+      if (isDragging) {
+        // Actualizar posición del tatuaje, restringiendo al lienzo
+        tattooX = constrain(mouseX - offsetX, 0, 800 - tattooWidth);
+        tattooY = constrain(mouseY - offsetY, 0, 800 - tattooHeight);
+      }
+    }
+
+    function mouseReleased() {
+      isDragging = false;
+    }
+  </script>
+</body>
+</html>
