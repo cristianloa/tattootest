@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simulador de Tatuajes</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -40,11 +41,12 @@
       background-color: #6b7280;
       transform: scale(1.05);
     }
-    /* Estilo para sliders en modo oscuro */
-    input[type="range"] {
-      accent-color: #f97316; /* Orange-500 */
-      height: 6px;
-      cursor: pointer;
+    /* Estilo para botones de ajuste */
+    .adjust-button {
+      padding: 4px 8px sm:px-3 sm:py-2;
+      font-size: 0.75rem sm:text-sm;
+      min-width: 32px;
+      text-align: center;
     }
     /* Estilo para botones con animación */
     .animated-button {
@@ -79,13 +81,21 @@
       50% { transform: scale(1.02); opacity: 0.9; }
       100% { transform: scale(1); opacity: 1; }
     }
+    /* Sticky controls en móvil */
+    @media (max-width: 639px) {
+      #customizationStep {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-100 dark:bg-black text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen p-2 sm:p-4">
   <!-- Contenedor principal con ancho completo -->
-  <div class="container mx-auto w-full flex flex-col lg:flex-row gap-4 sm:gap-6">
+  <div class="container mx-auto w-full flex flex-col lg:flex-row gap-2 sm:gap-4">
     <!-- Columna 1: Controles de personalización (25%) -->
-    <div class="w-full lg:w-1/4 flex flex-col gap-4 sm:gap-6">
+    <div class="w-full lg:w-1/4 mx-auto max-w-[400px] lg:max-w-none flex flex-col gap-4 sm:gap-6">
       <!-- Toggle para modo oscuro -->
       <div class="flex justify-end">
         <label class="relative inline-flex items-center cursor-pointer">
@@ -101,66 +111,89 @@
         
         <!-- Input para subir la fotografía del usuario -->
         <div class="mb-4">
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Sube tu foto (¡muéstranos dónde va el arte!):</label>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Sube tu foto:</label>
           <label for="photoInput" class="custom-file-upload mt-1">
-            <i class="fas fa-camera mr-1 sm:mr-2"></i> ¡Elige tu Foto Épica!
+            <i class="fas fa-camera mr-1 sm:mr-2"></i> ¡Elige tu Foto!
           </label>
           <input type="file" id="photoInput" accept="image/*">
         </div>
         
         <!-- Input para subir el diseño del tatuaje -->
         <div class="mb-4">
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Sube tu diseño (¡el alma de tu tatuaje!):</label>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Sube tu diseño:</label>
           <label for="tattooInput" class="custom-file-upload mt-1">
-            <i class="fas fa-paint-brush mr-1 sm:mr-2"></i> ¡Carga tu Diseño Brutal!
+            <i class="fas fa-paint-brush mr-1 sm:mr-2"></i> ¡Carga tu Diseño!
           </label>
           <input type="file" id="tattooInput" accept="image/*">
         </div>
         
-        <!-- Selección de modo de quitar fondo -->
-        <div class="mb-4">
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Quitar fondo del diseño:</label>
-          <select id="removeBgMode" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm">
-            <option value="none">Ninguno</option>
-            <option value="basic">Básico (Umbral fijo)</option>
-            <option value="sensitive">Sensible (Umbral más estricto)</option>
-            <option value="adaptive">Adaptativo (Basado en brillo)</option>
-          </select>
+        <!-- Checkboxes para quitar fondo y sombra -->
+        <div class="mb-4 flex flex-wrap gap-4">
+          <label class="flex items-center text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+            <input type="checkbox" id="removeBgCheck" class="mr-2 h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300 dark:border-gray-600 rounded">
+            Quitar fondo
+          </label>
+          <label class="flex items-center text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+            <input type="checkbox" id="shadowCheck" class="mr-2 h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300 dark:border-gray-600 rounded">
+            Añadir sombra
+          </label>
         </div>
         
-        <!-- Control para ajustar el umbral de fondo -->
-        <div class="mb-4">
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Umbral de fondo (Básico/Sensible):</label>
-          <input type="range" id="thresholdSlider" min="150" max="255" step="1" value="200" class="mt-1 block w-full">
-          <span id="thresholdValue" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">200</span>
-        </div>
-        
-        <!-- Control para ajustar el tamaño del tatuaje -->
-        <div class="mb-4">
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Tamaño del tatuaje (¡hazlo tuyo!):</label>
-          <input type="range" id="sizeSlider" min="0.5" max="2.0" step="0.1" value="1.0" class="mt-1 block w-full">
-          <span id="sizeValue" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">100%</span>
-        </div>
-        
-        <!-- Control para ajustar el ancho del tatuaje -->
-        <div class="mb-4">
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Ancho del tatuaje (¡estíralo a tu gusto!):</label>
-          <input type="range" id="widthSlider" min="0.5" max="2.0" step="0.1" value="1.0" class="mt-1 block w-full">
-          <span id="widthValue" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">100%</span>
-        </div>
-        
-        <!-- Control para ajustar el alto del tatuaje -->
-        <div class="mb-4">
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Alto del tatuaje (¡ajústalo como quieras!):</label>
-          <input type="range" id="heightSlider" min="0.5" max="2.0" step="0.1" value="1.0" class="mt-1 block w-full">
-          <span id="heightValue" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">100%</span>
-        </div>
-        
-        <!-- Control para rotar el tatuaje -->
-        <div class="mb-4">
-          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Rotar diseño (¡gíralo con estilo!):</label>
-          <input type="range" id="rotationSlider" min="0" max="360" step="1" value="0" class="mt-1 block w-full">
-          <span id="rotationValue" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">0°</span>
+        <!-- Controles de ajuste en cuadrícula -->
+        <div class="grid grid-cols-2 gap-2 sm:gap-4 mb-4">
+          <!-- Tamaño -->
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Tamaño: <span id="sizeValue" class="text-gray-500 dark:text-gray-400">100%</span></label>
+            <div class="flex mt-1">
+              <button id="sizeMinus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-l-md hover:bg-gray-300 dark:hover:bg-gray-600">-</button>
+              <button id="sizePlus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-r-md hover:bg-gray-300 dark:hover:bg-gray-600">+</button>
+            </div>
+          </div>
+          
+          <!-- Ancho -->
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Ancho: <span id="widthValue" class="text-gray-500 dark:text-gray-400">100%</span></label>
+            <div class="flex mt-1">
+              <button id="widthMinus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-l-md hover:bg-gray-300 dark:hover:bg-gray-600">-</button>
+              <button id="widthPlus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-r-md hover:bg-gray-300 dark:hover:bg-gray-600">+</button>
+            </div>
+          </div>
+          
+          <!-- Alto -->
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Alto: <span id="heightValue" class="text-gray-500 dark:text-gray-400">100%</span></label>
+            <div class="flex mt-1">
+              <button id="heightMinus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-l-md hover:bg-gray-300 dark:hover:bg-gray-600">-</button>
+              <button id="heightPlus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-r-md hover:bg-gray-300 dark:hover:bg-gray-600">+</button>
+            </div>
+          </div>
+          
+          <!-- Rotación -->
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Rotar: <span id="rotationValue" class="text-gray-500 dark:text-gray-400">0°</span></label>
+            <div class="flex mt-1">
+              <button id="rotationMinus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-l-md hover:bg-gray-300 dark:hover:bg-gray-600">-</button>
+              <button id="rotationPlus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-r-md hover:bg-gray-300 dark:hover:bg-gray-600">+</button>
+            </div>
+          </div>
+          
+          <!-- Opacidad -->
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Opacidad: <span id="opacityValue" class="text-gray-500 dark:text-gray-400">100%</span></label>
+            <div class="flex mt-1">
+              <button id="opacityMinus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-l-md hover:bg-gray-300 dark:hover:bg-gray-600">-</button>
+              <button id="opacityPlus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-r-md hover:bg-gray-300 dark:hover:bg-gray-600">+</button>
+            </div>
+          </div>
+          
+          <!-- Brillo -->
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Brillo: <span id="brightnessValue" class="text-gray-500 dark:text-gray-400">100%</span></label>
+            <div class="flex mt-1">
+              <button id="brightnessMinus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-l-md hover:bg-gray-300 dark:hover:bg-gray-600">-</button>
+              <button id="brightnessPlus" class="adjust-button bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-r-md hover:bg-gray-300 dark:hover:bg-gray-600">+</button>
+            </div>
+          </div>
         </div>
         
         <!-- Botón de exportación -->
@@ -174,15 +207,15 @@
     
     <!-- Columna 2: Contenedor para el lienzo (75%) -->
     <div class="w-full lg:w-3/4 flex justify-center relative">
-      <div id="canvasContainer" class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-2 sm:p-4 w-full max-w-[400px] sm:max-w-[600px] lg:max-w-[800px] relative">
+      <div id="canvasContainer" class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-2 sm:p-4 w-full max-w-[400px] sm:max-w-[600px] lg:max-w-[800px] aspect-square relative">
         <!-- Texto introductorio -->
-        <div id="introText" class="absolute inset-0 flex items-center justify-center text-center text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-orange-500 hidden">
-          ¡Crea tu Tatuaje Personalizado Épico!
+        <div id="introText" class="absolute inset-0 flex items-center justify-center text-center text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-orange-500 hidden">
+          ¡Crea tu Tatuaje Personalizado!
         </div>
       </div>
       <!-- Botón flotante para limpiar diseño -->
       <button id="clearButton" class="animated-button bg-red-500 dark:bg-red-600 text-white rounded-full hover:bg-red-600 dark:hover:bg-red-700 flex items-center justify-center">
-        <i class="fas fa-trash mr-1 sm:mr-2"></i> ¡Borra y Empieza de Nuevo!
+        <i class="fas fa-trash mr-1 sm:mr-2"></i> ¡Borra Todo!
       </button>
     </div>
   </div>
@@ -197,17 +230,17 @@
     let widthScale = 1.0; // Escala de ancho
     let heightScale = 1.0; // Escala de alto
     let rotation = 0; // Rotación en grados
-    let removeBgMode = 'none'; // Modo de quitar fondo
-    let bgThreshold = 200; // Umbral de fondo inicial
+    let opacity = 1.0; // Opacidad del tatuaje
+    let brightness = 1.0; // Brillo del tatuaje
+    let applyShadow = false; // Estado de la sombra
+    let removeBg = false; // Estado del checkbox de fondo
     let canvasSize; // Tamaño dinámico del lienzo
 
     function preload() {
       // Cargar imágenes cuando se suben
       const photoInput = document.getElementById('photoInput');
       const tattooInput = document.getElementById('tattooInput');
-      const removeBgModeSelect = document.getElementById('removeBgMode');
-      const thresholdSlider = document.getElementById('thresholdSlider');
-      const thresholdValue = document.getElementById('thresholdValue');
+      const removeBgCheck = document.getElementById('removeBgCheck');
 
       photoInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
@@ -232,25 +265,10 @@
         }
       });
 
-      // Actualizar modo de quitar fondo
-      removeBgModeSelect.addEventListener('change', (event) => {
-        removeBgMode = event.target.value;
+      // Actualizar estado de quitar fondo
+      removeBgCheck.addEventListener('change', (event) => {
+        removeBg = event.target.checked;
         if (tattooImg) {
-          processTattooImage();
-          // Recalcular dimensiones
-          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
-          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
-          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
-          tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
-          tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
-        }
-      });
-
-      // Actualizar umbral de fondo
-      thresholdSlider.addEventListener('input', (event) => {
-        bgThreshold = parseInt(event.target.value);
-        thresholdValue.textContent = bgThreshold;
-        if (tattooImg && (removeBgMode === 'basic' || removeBgMode === 'sensitive')) {
           processTattooImage();
           // Recalcular dimensiones
           let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
@@ -269,16 +287,12 @@
       processedTattooImg = createGraphics(tattooImg.width, tattooImg.height);
       processedTattooImg.image(tattooImg, 0, 0);
 
-      if (removeBgMode === 'none') {
+      if (!removeBg) {
         processedTattooImg = tattooImg; // Usar imagen original
-        return;
-      }
-
-      processedTattooImg.loadPixels();
-
-      if (removeBgMode === 'basic' || removeBgMode === 'sensitive') {
-        // Usar umbral fijo (200 para básico, 230 para sensible)
-        let threshold = removeBgMode === 'basic' ? bgThreshold : Math.min(bgThreshold, 230);
+      } else {
+        // Aplicar eliminación de fondo con umbral fijo
+        processedTattooImg.loadPixels();
+        let threshold = 200;
         for (let i = 0; i < processedTattooImg.pixels.length; i += 4) {
           let r = processedTattooImg.pixels[i];
           let g = processedTattooImg.pixels[i + 1];
@@ -287,58 +301,19 @@
             processedTattooImg.pixels[i + 3] = 0; // Hacer transparente
           }
         }
-      } else if (removeBgMode === 'adaptive') {
-        // Calcular brillo promedio de la imagen
-        let totalBrightness = 0;
-        let pixelCount = 0;
-        for (let i = 0; i < processedTattooImg.pixels.length; i += 4) {
-          let r = processedTattooImg.pixels[i];
-          let g = processedTattooImg.pixels[i + 1];
-          let b = processedTattooImg.pixels[i + 2];
-          totalBrightness += (r + g + b) / 3;
-          pixelCount++;
-        }
-        let avgBrightness = totalBrightness / pixelCount;
-        let adaptiveThreshold = avgBrightness * 0.9; // Umbral al 90% del brillo promedio
-
-        // Aplicar umbral adaptativo y suavizado de bordes
-        for (let x = 0; x < processedTattooImg.width; x++) {
-          for (let y = 0; y < processedTattooImg.height; y++) {
-            let i = (y * processedTattooImg.width + x) * 4;
-            let r = processedTattooImg.pixels[i];
-            let g = processedTattooImg.pixels[i + 1];
-            let b = processedTattooImg.pixels[i + 2];
-            let brightness = (r + g + b) / 3;
-            if (brightness > adaptiveThreshold) {
-              // Verificar vecinos para suavizado
-              let isEdge = false;
-              for (let dx = -1; dx <= 1; dx++) {
-                for (let dy = -1; dy <= 1; dy++) {
-                  if (dx === 0 && dy === 0) continue;
-                  let nx = x + dx;
-                  let ny = y + dy;
-                  if (nx >= 0 && nx < processedTattooImg.width && ny >= 0 && ny < processedTattooImg.height) {
-                    let ni = (ny * processedTattooImg.width + nx) * 4;
-                    let nr = processedTattooImg.pixels[ni];
-                    let ng = processedTattooImg.pixels[ni + 1];
-                    let nb = processedTattooImg.pixels[ni + 2];
-                    let nBrightness = (nr + ng + nb) / 3;
-                    if (nBrightness <= adaptiveThreshold) {
-                      isEdge = true;
-                      break;
-                    }
-                  }
-                }
-                if (isEdge) break;
-              }
-              if (!isEdge) {
-                processedTattooImg.pixels[i + 3] = 0; // Hacer transparente si no es borde
-              }
-            }
-          }
-        }
+        processedTattooImg.updatePixels();
       }
-      processedTattooImg.updatePixels();
+
+      // Aplicar brillo
+      if (brightness !== 1.0) {
+        processedTattooImg.loadPixels();
+        for (let i = 0; i < processedTattooImg.pixels.length; i += 4) {
+          processedTattooImg.pixels[i] = constrain(processedTattooImg.pixels[i] * brightness, 0, 255);
+          processedTattooImg.pixels[i + 1] = constrain(processedTattooImg.pixels[i + 1] * brightness, 0, 255);
+          processedTattooImg.pixels[i + 2] = constrain(processedTattooImg.pixels[i + 2] * brightness, 0, 255);
+        }
+        processedTattooImg.updatePixels();
+      }
     }
 
     function setup() {
@@ -365,54 +340,101 @@
       darkModeToggle.addEventListener('change', () => {
         document.documentElement.classList.toggle('dark');
       });
-      
-      // Actualizar tamaño del tatuaje
-      const sizeSlider = document.getElementById('sizeSlider');
+
+      // Botones para ajustar tamaño
+      const sizeMinus = document.getElementById('sizeMinus');
+      const sizePlus = document.getElementById('sizePlus');
       const sizeValue = document.getElementById('sizeValue');
-      sizeSlider.addEventListener('input', (event) => {
-        tattooScale = parseFloat(event.target.value);
+      sizeMinus.addEventListener('click', () => {
+        tattooScale = Math.max(0.5, tattooScale - 0.1);
         sizeValue.textContent = `${Math.round(tattooScale * 100)}%`;
-        if (tattooImg) {
-          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
-          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
-          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
-          tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
-          tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
-        }
+        updateTattooDimensions();
+      });
+      sizePlus.addEventListener('click', () => {
+        tattooScale = Math.min(2.0, tattooScale + 0.1);
+        sizeValue.textContent = `${Math.round(tattooScale * 100)}%`;
+        updateTattooDimensions();
       });
 
-      // Actualizar ancho del tatuaje
-      const widthSlider = document.getElementById('widthSlider');
+      // Botones para ajustar ancho
+      const widthMinus = document.getElementById('widthMinus');
+      const widthPlus = document.getElementById('widthPlus');
       const widthValue = document.getElementById('widthValue');
-      widthSlider.addEventListener('input', (event) => {
-        widthScale = parseFloat(event.target.value);
+      widthMinus.addEventListener('click', () => {
+        widthScale = Math.max(0.5, widthScale - 0.1);
         widthValue.textContent = `${Math.round(widthScale * 100)}%`;
-        if (tattooImg) {
-          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
-          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
-          tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
-        }
+        updateTattooDimensions();
+      });
+      widthPlus.addEventListener('click', () => {
+        widthScale = Math.min(2.0, widthScale + 0.1);
+        widthValue.textContent = `${Math.round(widthScale * 100)}%`;
+        updateTattooDimensions();
       });
 
-      // Actualizar alto del tatuaje
-      const heightSlider = document.getElementById('heightSlider');
+      // Botones para ajustar alto
+      const heightMinus = document.getElementById('heightMinus');
+      const heightPlus = document.getElementById('heightPlus');
       const heightValue = document.getElementById('heightValue');
-      heightSlider.addEventListener('input', (event) => {
-        heightScale = parseFloat(event.target.value);
+      heightMinus.addEventListener('click', () => {
+        heightScale = Math.max(0.5, heightScale - 0.1);
         heightValue.textContent = `${Math.round(heightScale * 100)}%`;
+        updateTattooDimensions();
+      });
+      heightPlus.addEventListener('click', () => {
+        heightScale = Math.min(2.0, heightScale + 0.1);
+        heightValue.textContent = `${Math.round(heightScale * 100)}%`;
+        updateTattooDimensions();
+      });
+
+      // Botones para ajustar rotación
+      const rotationMinus = document.getElementById('rotationMinus');
+      const rotationPlus = document.getElementById('rotationPlus');
+      const rotationValue = document.getElementById('rotationValue');
+      rotationMinus.addEventListener('click', () => {
+        rotation = Math.max(0, rotation - 5);
+        rotationValue.textContent = `${Math.round(rotation)}°`;
+      });
+      rotationPlus.addEventListener('click', () => {
+        rotation = Math.min(360, rotation + 5);
+        rotationValue.textContent = `${Math.round(rotation)}°`;
+      });
+
+      // Botones para ajustar opacidad
+      const opacityMinus = document.getElementById('opacityMinus');
+      const opacityPlus = document.getElementById('opacityPlus');
+      const opacityValue = document.getElementById('opacityValue');
+      opacityMinus.addEventListener('click', () => {
+        opacity = Math.max(0.1, opacity - 0.1);
+        opacityValue.textContent = `${Math.round(opacity * 100)}%`;
+      });
+      opacityPlus.addEventListener('click', () => {
+        opacity = Math.min(1.0, opacity + 0.1);
+        opacityValue.textContent = `${Math.round(opacity * 100)}%`;
+      });
+
+      // Botones para ajustar brillo
+      const brightnessMinus = document.getElementById('brightnessMinus');
+      const brightnessPlus = document.getElementById('brightnessPlus');
+      const brightnessValue = document.getElementById('brightnessValue');
+      brightnessMinus.addEventListener('click', () => {
+        brightness = Math.max(0.5, brightness - 0.1);
+        brightnessValue.textContent = `${Math.round(brightness * 100)}%`;
         if (tattooImg) {
-          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
-          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
-          tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
+          processTattooImage(); // Reprocesar para aplicar brillo
+        }
+      });
+      brightnessPlus.addEventListener('click', () => {
+        brightness = Math.min(1.5, brightness + 0.1);
+        brightnessValue.textContent = `${Math.round(brightness * 100)}%`;
+        if (tattooImg) {
+          processTattooImage(); // Reprocesar para aplicar brillo
         }
       });
 
-      // Actualizar rotación del tatuaje
-      const rotationSlider = document.getElementById('rotationSlider');
-      const rotationValue = document.getElementById('rotationValue');
-      rotationSlider.addEventListener('input', (event) => {
-        rotation = parseFloat(event.target.value);
-        rotationValue.textContent = `${Math.round(rotation)}°`;
+      // Checkbox para sombra
+      const shadowCheck = document.getElementById('shadowCheck');
+      shadowCheck.addEventListener('change', (event) => {
+        applyShadow = event.target.checked;
       });
 
       // Botón para limpiar diseño
@@ -424,19 +446,18 @@
         widthScale = 1.0;
         heightScale = 1.0;
         rotation = 0;
-        removeBgMode = 'none';
-        bgThreshold = 200;
-        sizeSlider.value = 1.0;
-        widthSlider.value = 1.0;
-        heightSlider.value = 1.0;
-        rotationSlider.value = 0;
+        opacity = 1.0;
+        brightness = 1.0;
+        applyShadow = false;
+        removeBg = false;
         sizeValue.textContent = '100%';
         widthValue.textContent = '100%';
         heightValue.textContent = '100%';
         rotationValue.textContent = '0°';
-        removeBgModeSelect.value = 'none';
-        thresholdSlider.value = 200;
-        thresholdValue.textContent = '200';
+        opacityValue.textContent = '100%';
+        brightnessValue.textContent = '100%';
+        removeBgCheck.checked = false;
+        shadowCheck.checked = false;
         tattooInput.value = ''; // Limpiar el input file
       });
 
@@ -449,6 +470,17 @@
         }
         saveCanvas('simulacion_tatuaje', 'png');
       });
+
+      // Función auxiliar para actualizar dimensiones
+      function updateTattooDimensions() {
+        if (tattooImg) {
+          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
+          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
+          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+          tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
+          tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
+        }
+      }
     }
 
     function draw() {
@@ -464,13 +496,22 @@
         image(photoImg, 0, 0, canvasSize, canvasSize);
       }
 
-      // Dibujar el tatuaje en su posición con rotación
+      // Dibujar el tatuaje con opacidad, brillo y sombra
       if (processedTattooImg) {
         push();
         translate(tattooX + tattooWidth / 2, tattooY + tattooHeight / 2);
         rotate(radians(rotation));
         imageMode(CENTER);
+        if (applyShadow) {
+          drawingContext.shadowOffsetX = 5;
+          drawingContext.shadowOffsetY = 5;
+          drawingContext.shadowBlur = 10;
+          drawingContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        }
+        drawingContext.globalAlpha = opacity;
         image(processedTattooImg, 0, 0, tattooWidth, tattooHeight);
+        drawingContext.globalAlpha = 1.0; // Restaurar opacidad
+        drawingContext.shadowBlur = 0; // Restaurar sombra
         pop();
       }
     }
