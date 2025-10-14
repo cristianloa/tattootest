@@ -20,12 +20,13 @@
     }
     .custom-file-upload {
       display: inline-block;
-      padding: 8px 16px;
+      padding: 6px 12px sm:p-8 sm:px-16;
       background-color: #e5e7eb;
       color: #111827;
       border-radius: 0.375rem;
       cursor: pointer;
       transition: transform 0.2s ease-in-out, background-color 0.2s;
+      font-size: 0.875rem sm:text-base;
     }
     .dark .custom-file-upload {
       background-color: #4b5563;
@@ -42,6 +43,8 @@
     /* Estilo para sliders en modo oscuro */
     input[type="range"] {
       accent-color: #f97316; /* Orange-500 */
+      height: 6px;
+      cursor: pointer;
     }
     /* Estilo para botones con animación */
     .animated-button {
@@ -53,14 +56,16 @@
     /* Estilo para botón flotante */
     #clearButton {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 8px;
+      right: 8px;
       z-index: 50;
+      padding: 6px 10px;
+      font-size: 0.75rem;
     }
-    @media (max-width: 640px) {
+    @media (min-width: 640px) {
       #clearButton {
-        bottom: 10px;
-        right: 10px;
+        bottom: 20px;
+        right: 20px;
         padding: 8px 12px;
         font-size: 0.875rem;
       }
@@ -76,46 +81,46 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 dark:bg-black text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 dark:bg-black text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen p-2 sm:p-4">
   <!-- Contenedor principal con ancho completo -->
-  <div class="container mx-auto w-full flex flex-col lg:flex-row gap-6">
-    <!-- Columna 1: Controles de personalización y pedido (25%) -->
-    <div class="w-full lg:w-1/4 flex flex-col gap-6">
+  <div class="container mx-auto w-full flex flex-col lg:flex-row gap-4 sm:gap-6">
+    <!-- Columna 1: Controles de personalización (25%) -->
+    <div class="w-full lg:w-1/4 flex flex-col gap-4 sm:gap-6">
       <!-- Toggle para modo oscuro -->
       <div class="flex justify-end">
         <label class="relative inline-flex items-center cursor-pointer">
           <input type="checkbox" id="darkModeToggle" class="sr-only peer">
-          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-500 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
-          <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Modo Oscuro</span>
+          <div class="w-9 h-5 sm:w-11 sm:h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-500 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+          <span class="ml-2 text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-300">Modo Oscuro</span>
         </label>
       </div>
 
-      <!-- Paso 1: Personalización -->
-      <div id="customizationStep" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg w-full">
-        <h1 class="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">¡Crea tu Tatuaje Épico!</h1>
+      <!-- Personalización -->
+      <div id="customizationStep" class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-lg shadow-lg w-full">
+        <h1 class="text-xl sm:text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">¡Crea tu Tatuaje Épico!</h1>
         
         <!-- Input para subir la fotografía del usuario -->
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sube tu foto (¡muéstranos dónde va el arte!):</label>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Sube tu foto (¡muéstranos dónde va el arte!):</label>
           <label for="photoInput" class="custom-file-upload mt-1">
-            <i class="fas fa-camera mr-2"></i> ¡Elige tu Foto Épica!
+            <i class="fas fa-camera mr-1 sm:mr-2"></i> ¡Elige tu Foto Épica!
           </label>
           <input type="file" id="photoInput" accept="image/*">
         </div>
         
         <!-- Input para subir el diseño del tatuaje -->
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sube tu diseño (¡el alma de tu tatuaje!):</label>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Sube tu diseño (¡el alma de tu tatuaje!):</label>
           <label for="tattooInput" class="custom-file-upload mt-1">
-            <i class="fas fa-paint-brush mr-2"></i> ¡Carga tu Diseño Brutal!
+            <i class="fas fa-paint-brush mr-1 sm:mr-2"></i> ¡Carga tu Diseño Brutal!
           </label>
           <input type="file" id="tattooInput" accept="image/*">
         </div>
         
         <!-- Selección de modo de quitar fondo -->
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quitar fondo del diseño:</label>
-          <select id="removeBgMode" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Quitar fondo del diseño:</label>
+          <select id="removeBgMode" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm">
             <option value="none">Ninguno</option>
             <option value="basic">Básico (Umbral fijo)</option>
             <option value="sensitive">Sensible (Umbral más estricto)</option>
@@ -125,93 +130,43 @@
         
         <!-- Control para ajustar el umbral de fondo -->
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Umbral de fondo (Básico/Sensible):</label>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Umbral de fondo (Básico/Sensible):</label>
           <input type="range" id="thresholdSlider" min="150" max="255" step="1" value="200" class="mt-1 block w-full">
-          <span id="thresholdValue" class="text-sm text-gray-500 dark:text-gray-400">200</span>
+          <span id="thresholdValue" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">200</span>
         </div>
         
         <!-- Control para ajustar el tamaño del tatuaje -->
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tamaño del tatuaje (¡hazlo tuyo!):</label>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Tamaño del tatuaje (¡hazlo tuyo!):</label>
           <input type="range" id="sizeSlider" min="0.5" max="2.0" step="0.1" value="1.0" class="mt-1 block w-full">
-          <span id="sizeValue" class="text-sm text-gray-500 dark:text-gray-400">100%</span>
+          <span id="sizeValue" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">100%</span>
         </div>
         
         <!-- Control para ajustar el ancho del tatuaje -->
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ancho del tatuaje (¡estíralo a tu gusto!):</label>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Ancho del tatuaje (¡estíralo a tu gusto!):</label>
           <input type="range" id="widthSlider" min="0.5" max="2.0" step="0.1" value="1.0" class="mt-1 block w-full">
-          <span id="widthValue" class="text-sm text-gray-500 dark:text-gray-400">100%</span>
+          <span id="widthValue" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">100%</span>
         </div>
         
         <!-- Control para ajustar el alto del tatuaje -->
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Alto del tatuaje (¡ajústalo como quieras!):</label>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Alto del tatuaje (¡ajústalo como quieras!):</label>
           <input type="range" id="heightSlider" min="0.5" max="2.0" step="0.1" value="1.0" class="mt-1 block w-full">
-          <span id="heightValue" class="text-sm text-gray-500 dark:text-gray-400">100%</span>
+          <span id="heightValue" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">100%</span>
         </div>
         
         <!-- Control para rotar el tatuaje -->
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rotar diseño (¡gíralo con estilo!):</label>
+          <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Rotar diseño (¡gíralo con estilo!):</label>
           <input type="range" id="rotationSlider" min="0" max="360" step="1" value="0" class="mt-1 block w-full">
-          <span id="rotationValue" class="text-sm text-gray-500 dark:text-gray-400">0°</span>
+          <span id="rotationValue" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">0°</span>
         </div>
         
-        <!-- Botones -->
-        <div class="flex space-x-2">
-          <button id="exportButton" class="animated-button flex-1 bg-orange-500 dark:bg-orange-600 text-white py-2 px-4 rounded hover:bg-orange-600 dark:hover:bg-orange-700 flex items-center justify-center">
-            <i class="fas fa-download mr-2"></i> ¡Guarda tu Obra Maestra!
-          </button>
-          <button id="nextStepButton" class="animated-button flex-1 bg-orange-500 dark:bg-orange-600 text-white py-2 px-4 rounded hover:bg-orange-600 dark:hover:bg-orange-700 flex items-center justify-center">
-            <i class="fas fa-arrow-right mr-2"></i> ¡A por el Pedido!
-          </button>
-        </div>
-      </div>
-
-      <!-- Paso 2: Detalles del Pedido -->
-      <div id="orderStep" class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg w-full hidden">
-        <h2 class="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">¡Finaliza tu Pedido Épico!</h2>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tamaño del tatuaje (aprox.):</label>
-          <select id="sizeInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-            <option value="Pequeño">Pequeño</option>
-            <option value="Mediano">Mediano</option>
-            <option value="Grande">Grande</option>
-          </select>
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estilo:</label>
-          <select id="styleInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-            <option value="Negro y gris">Negro y gris</option>
-            <option value="Color">Color</option>
-            <option value="Minimalista">Minimalista</option>
-          </select>
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre:</label>
-          <input type="text" id="nameInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500" placeholder="Tu nombre épico">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo electrónico:</label>
-          <input type="email" id="emailInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500" placeholder="tu@correo.com">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono:</label>
-          <input type="tel" id="phoneInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500" placeholder="123-456-7890">
-        </div>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notas adicionales:</label>
-          <textarea id="notesInput" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500" placeholder="¡Cuéntanos tus ideas locas!"></textarea>
-        </div>
-        
-        <!-- Botones -->
-        <div class="flex space-x-2">
-          <button id="backButton" class="animated-button flex-1 bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-600 dark:hover:bg-gray-700 flex items-center justify-center">
-            <i class="fas fa-arrow-left mr-2"></i> ¡Volver a Jugar!
-          </button>
-          <button id="orderButton" class="animated-button flex-1 bg-orange-500 dark:bg-orange-600 text-white py-2 px-4 rounded hover:bg-orange-600 dark:hover:bg-orange-700 flex items-center justify-center">
-            <i class="fas fa-check-circle mr-2"></i> ¡Hazlo Real!
+        <!-- Botón de exportación -->
+        <div class="flex justify-center">
+          <button id="exportButton" class="animated-button bg-orange-500 dark:bg-orange-600 text-white py-1 px-2 sm:py-2 sm:px-4 rounded hover:bg-orange-600 dark:hover:bg-orange-700 flex items-center justify-center w-full max-w-[200px] sm:max-w-xs text-xs sm:text-sm">
+            <i class="fas fa-download mr-1 sm:mr-2"></i> ¡Guarda tu Obra Maestra!
           </button>
         </div>
       </div>
@@ -219,15 +174,15 @@
     
     <!-- Columna 2: Contenedor para el lienzo (75%) -->
     <div class="w-full lg:w-3/4 flex justify-center relative">
-      <div id="canvasContainer" class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-4 w-full max-w-[800px] relative">
+      <div id="canvasContainer" class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-2 sm:p-4 w-full max-w-[400px] sm:max-w-[600px] lg:max-w-[800px] relative">
         <!-- Texto introductorio -->
-        <div id="introText" class="absolute inset-0 flex items-center justify-center text-center text-4xl font-bold text-gray-900 dark:text-orange-500 hidden">
+        <div id="introText" class="absolute inset-0 flex items-center justify-center text-center text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-orange-500 hidden">
           ¡Crea tu Tatuaje Personalizado Épico!
         </div>
       </div>
       <!-- Botón flotante para limpiar diseño -->
-      <button id="clearButton" class="animated-button bg-red-500 dark:bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-600 dark:hover:bg-red-700 flex items-center justify-center">
-        <i class="fas fa-trash mr-2"></i> ¡Borra y Empieza de Nuevo!
+      <button id="clearButton" class="animated-button bg-red-500 dark:bg-red-600 text-white rounded-full hover:bg-red-600 dark:hover:bg-red-700 flex items-center justify-center">
+        <i class="fas fa-trash mr-1 sm:mr-2"></i> ¡Borra y Empieza de Nuevo!
       </button>
     </div>
   </div>
@@ -244,6 +199,7 @@
     let rotation = 0; // Rotación en grados
     let removeBgMode = 'none'; // Modo de quitar fondo
     let bgThreshold = 200; // Umbral de fondo inicial
+    let canvasSize; // Tamaño dinámico del lienzo
 
     function preload() {
       // Cargar imágenes cuando se suben
@@ -270,8 +226,8 @@
             let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
             tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
             tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
-            tattooX = (800 - tattooWidth) / 2;
-            tattooY = (800 - tattooHeight) / 2;
+            tattooX = (canvasSize - tattooWidth) / 2;
+            tattooY = (canvasSize - tattooHeight) / 2;
           });
         }
       });
@@ -285,8 +241,8 @@
           let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
           tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
           tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
-          tattooX = constrain(tattooX, 0, 800 - tattooWidth);
-          tattooY = constrain(tattooY, 0, 800 - tattooHeight);
+          tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
+          tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
         }
       });
 
@@ -300,8 +256,8 @@
           let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
           tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
           tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
-          tattooX = constrain(tattooX, 0, 800 - tattooWidth);
-          tattooY = constrain(tattooY, 0, 800 - tattooHeight);
+          tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
+          tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
         }
       });
     }
@@ -386,8 +342,23 @@
     }
 
     function setup() {
-      let canvas = createCanvas(800, 800);
+      // Establecer tamaño del lienzo según el ancho de la pantalla
+      canvasSize = windowWidth < 640 ? Math.min(windowWidth - 32, 400) : windowWidth < 1024 ? 600 : 800;
+      let canvas = createCanvas(canvasSize, canvasSize);
       canvas.parent('canvasContainer');
+
+      // Ajustar lienzo al cambiar tamaño de ventana
+      windowResized = function() {
+        canvasSize = windowWidth < 640 ? Math.min(windowWidth - 32, 400) : windowWidth < 1024 ? 600 : 800;
+        resizeCanvas(canvasSize, canvasSize);
+        if (tattooImg) {
+          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
+          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
+          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+          tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
+          tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
+        }
+      };
 
       // Toggle para modo oscuro
       const darkModeToggle = document.getElementById('darkModeToggle');
@@ -405,8 +376,8 @@
           let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
           tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
           tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
-          tattooX = constrain(tattooX, 0, 800 - tattooWidth);
-          tattooY = constrain(tattooY, 0, 800 - tattooHeight);
+          tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
+          tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
         }
       });
 
@@ -419,7 +390,7 @@
         if (tattooImg) {
           let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
           tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
-          tattooX = constrain(tattooX, 0, 800 - tattooWidth);
+          tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
         }
       });
 
@@ -432,7 +403,7 @@
         if (tattooImg) {
           let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
           tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
-          tattooY = constrain(tattooY, 0, 800 - tattooHeight);
+          tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
         }
       });
 
@@ -472,60 +443,11 @@
       // Exportar imagen
       const exportButton = document.getElementById('exportButton');
       exportButton.addEventListener('click', () => {
-        saveCanvas('simulacion_tatuaje', 'png');
-      });
-
-      // Navegación entre pasos
-      const nextStepButton = document.getElementById('nextStepButton');
-      const backButton = document.getElementById('backButton');
-      const customizationStep = document.getElementById('customizationStep');
-      const orderStep = document.getElementById('orderStep');
-
-      nextStepButton.addEventListener('click', () => {
         if (!photoImg) {
-          alert('Por favor, sube una fotografía antes de continuar.');
+          alert('Por favor, sube una fotografía antes de guardar.');
           return;
         }
-        customizationStep.classList.add('hidden');
-        orderStep.classList.remove('hidden');
-      });
-
-      backButton.addEventListener('click', () => {
-        orderStep.classList.add('hidden');
-        customizationStep.classList.remove('hidden');
-      });
-
-      // Realizar pedido (solicitar cita)
-      const orderButton = document.getElementById('orderButton');
-      orderButton.addEventListener('click', () => {
-        const size = document.getElementById('sizeInput').value;
-        const style = document.getElementById('styleInput').value;
-        const name = document.getElementById('nameInput').value;
-        const email = document.getElementById('emailInput').value;
-        const phone = document.getElementById('phoneInput').value;
-        const notes = document.getElementById('notesInput').value;
-        const bgRemoved = removeBgMode !== 'none' ? `Sí (${removeBgMode}, Umbral: ${bgThreshold})` : 'No';
-
-        if (!name || !email || !phone) {
-          alert('Por favor, completa todos los campos requeridos.');
-          return;
-        }
-
-        const orderDetails = `
-          Solicitud de Cita Realizada:
-          - Tamaño: ${size}
-          - Estilo: ${style}
-          - Escala del diseño: ${Math.round(tattooScale * 100)}%
-          - Escala de ancho: ${Math.round(widthScale * 100)}%
-          - Escala de alto: ${Math.round(heightScale * 100)}%
-          - Rotación: ${Math.round(rotation)}°
-          - Fondo removido: ${bgRemoved}
-          - Nombre: ${name}
-          - Correo: ${email}
-          - Teléfono: ${phone}
-          - Notas: ${notes}
-        `;
-        alert(orderDetails);
+        saveCanvas('simulacion_tatuaje', 'png');
       });
     }
 
@@ -539,7 +461,7 @@
       } else {
         introText.classList.add('hidden');
         // Dibujar la fotografía
-        image(photoImg, 0, 0, 800, 800);
+        image(photoImg, 0, 0, canvasSize, canvasSize);
       }
 
       // Dibujar el tatuaje en su posición con rotación
@@ -578,8 +500,8 @@
     function mouseDragged() {
       if (isDragging) {
         // Actualizar posición del tatuaje, restringiendo al lienzo
-        tattooX = constrain(mouseX - offsetX, 0, 800 - tattooWidth);
-        tattooY = constrain(mouseY - offsetY, 0, 800 - tattooHeight);
+        tattooX = constrain(mouseX - offsetX, 0, canvasSize - tattooWidth);
+        tattooY = constrain(mouseY - offsetY, 0, canvasSize - tattooHeight);
       }
     }
 
