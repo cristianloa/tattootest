@@ -94,8 +94,8 @@
 <body class="bg-gray-100 dark:bg-black text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen p-2 sm:p-4">
   <!-- Contenedor principal con ancho completo -->
   <div class="container mx-auto w-full flex flex-col lg:flex-row gap-2 sm:gap-4">
-    <!-- Columna 1: Controles de personalización (25%) -->
-    <div class="w-full lg:w-1/4 mx-auto max-w-[400px] lg:max-w-none flex flex-col gap-4 sm:gap-6">
+    <!-- Pantalla 1: Selección de archivos -->
+    <div id="screen1" class="w-full lg:w-1/4 mx-auto max-w-[400px] lg:max-w-none flex flex-col gap-4 sm:gap-6">
       <!-- Toggle para modo oscuro -->
       <div class="flex justify-end">
         <label class="relative inline-flex items-center cursor-pointer">
@@ -105,9 +105,9 @@
         </label>
       </div>
 
-      <!-- Personalización -->
-      <div id="customizationStep" class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-lg shadow-lg w-full">
-        <h1 class="text-xl sm:text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">¡Crea tu Tatuaje Épico!</h1>
+      <!-- Personalización - Pantalla 1 -->
+      <div class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-lg shadow-lg w-full">
+        <h1 class="text-xl sm:text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">¡Selecciona tus Imágenes!</h1>
         
         <!-- Input para subir la fotografía del usuario -->
         <div class="mb-4">
@@ -126,6 +126,28 @@
           </label>
           <input type="file" id="tattooInput" accept="image/*">
         </div>
+        
+        <!-- Botón para continuar -->
+        <div class="flex justify-center">
+          <button id="nextButton" class="animated-button bg-orange-500 dark:bg-orange-600 text-white py-1 px-2 sm:py-2 sm:px-4 rounded hover:bg-orange-600 dark:hover:bg-orange-700 flex items-center justify-center w-full max-w-[200px] sm:max-w-xs text-xs sm:text-sm">
+            <i class="fas fa-arrow-right mr-1 sm:mr-2"></i> ¡Continuar a Editar!
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pantalla 2: Edición del diseño -->
+    <div id="screen2" class="w-full lg:w-1/4 mx-auto max-w-[400px] lg:max-w-none flex flex-col gap-4 sm:gap-6 hidden">
+      <!-- Botón para regresar -->
+      <div class="flex justify-start">
+        <button id="backButton" class="animated-button bg-gray-500 dark:bg-gray-600 text-white py-1 px-2 sm:py-2 sm:px-4 rounded hover:bg-gray-600 dark:hover:bg-gray-700 flex items-center text-xs sm:text-sm">
+          <i class="fas fa-arrow-left mr-1 sm:mr-2"></i> Regresar
+        </button>
+      </div>
+
+      <!-- Personalización - Pantalla 2 -->
+      <div id="customizationStep" class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-lg shadow-lg w-full">
+        <h1 class="text-xl sm:text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">¡Edita tu Tatuaje!</h1>
         
         <!-- Checkboxes para quitar fondo y sombra -->
         <div class="mb-4 flex flex-wrap gap-4">
@@ -199,7 +221,7 @@
         <!-- Botón de exportación -->
         <div class="flex justify-center">
           <button id="exportButton" class="animated-button bg-orange-500 dark:bg-orange-600 text-white py-1 px-2 sm:py-2 sm:px-4 rounded hover:bg-orange-600 dark:hover:bg-orange-700 flex items-center justify-center w-full max-w-[200px] sm:max-w-xs text-xs sm:text-sm">
-            <i class="fas fa-download mr-1 sm:mr-2"></i> ¡Guarda tu Obra Maestra!
+            <i class="fas fa-download mr-1 sm:mr-2"></i> ¡Guarda tu Obra!
           </button>
         </div>
       </div>
@@ -245,7 +267,10 @@
       photoInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
-          photoImg = loadImage(URL.createObjectURL(file));
+          photoImg = loadImage(URL.createObjectURL(file), () => {
+            // Ajustar lienzo al tamaño original de la foto
+            adjustCanvasSize();
+          });
         }
       });
 
@@ -255,10 +280,9 @@
           tattooImg = loadImage(URL.createObjectURL(file), () => {
             // Procesar la imagen inicial
             processTattooImage();
-            // Inicializar posición del tatuaje al centro
-            let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
-            tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
-            tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+            // Inicializar posición y tamaño original del tatuaje
+            tattooWidth = tattooImg.width * tattooScale * widthScale;
+            tattooHeight = tattooImg.height * tattooScale * heightScale;
             tattooX = (canvasSize - tattooWidth) / 2;
             tattooY = (canvasSize - tattooHeight) / 2;
           });
@@ -271,9 +295,8 @@
         if (tattooImg) {
           processTattooImage();
           // Recalcular dimensiones
-          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
-          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
-          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+          tattooWidth = tattooImg.width * tattooScale * widthScale;
+          tattooHeight = tattooImg.height * tattooScale * heightScale;
           tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
           tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
         }
@@ -316,20 +339,34 @@
       }
     }
 
+    function adjustCanvasSize() {
+      // Ajustar el tamaño del lienzo según la imagen de fondo
+      if (photoImg) {
+        canvasSize = Math.min(windowWidth - 32, Math.max(photoImg.width, photoImg.height, 400));
+        if (windowWidth >= 640 && windowWidth < 1024) {
+          canvasSize = Math.min(canvasSize, 600);
+        } else if (windowWidth >= 1024) {
+          canvasSize = Math.min(canvasSize, 800);
+        }
+        resizeCanvas(canvasSize, canvasSize);
+      } else {
+        canvasSize = windowWidth < 640 ? Math.min(windowWidth - 32, 400) : windowWidth < 1024 ? 600 : 800;
+        resizeCanvas(canvasSize, canvasSize);
+      }
+    }
+
     function setup() {
-      // Establecer tamaño del lienzo según el ancho de la pantalla
+      // Establecer tamaño inicial del lienzo
       canvasSize = windowWidth < 640 ? Math.min(windowWidth - 32, 400) : windowWidth < 1024 ? 600 : 800;
       let canvas = createCanvas(canvasSize, canvasSize);
       canvas.parent('canvasContainer');
 
       // Ajustar lienzo al cambiar tamaño de ventana
       windowResized = function() {
-        canvasSize = windowWidth < 640 ? Math.min(windowWidth - 32, 400) : windowWidth < 1024 ? 600 : 800;
-        resizeCanvas(canvasSize, canvasSize);
+        adjustCanvasSize();
         if (tattooImg) {
-          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
-          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
-          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+          tattooWidth = tattooImg.width * tattooScale * widthScale;
+          tattooHeight = tattooImg.height * tattooScale * heightScale;
           tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
           tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
         }
@@ -339,6 +376,24 @@
       const darkModeToggle = document.getElementById('darkModeToggle');
       darkModeToggle.addEventListener('change', () => {
         document.documentElement.classList.toggle('dark');
+      });
+
+      // Botón para continuar a la pantalla de edición
+      const nextButton = document.getElementById('nextButton');
+      nextButton.addEventListener('click', () => {
+        if (!photoImg || !tattooImg) {
+          alert('Por favor, sube tanto una fotografía como un diseño antes de continuar.');
+          return;
+        }
+        document.getElementById('screen1').classList.add('hidden');
+        document.getElementById('screen2').classList.remove('hidden');
+      });
+
+      // Botón para regresar a la pantalla de selección
+      const backButton = document.getElementById('backButton');
+      backButton.addEventListener('click', () => {
+        document.getElementById('screen2').classList.add('hidden');
+        document.getElementById('screen1').classList.remove('hidden');
       });
 
       // Botones para ajustar tamaño
@@ -442,6 +497,7 @@
       clearButton.addEventListener('click', () => {
         tattooImg = null;
         processedTattooImg = null;
+        photoImg = null;
         tattooScale = 1.0;
         widthScale = 1.0;
         heightScale = 1.0;
@@ -458,7 +514,10 @@
         brightnessValue.textContent = '100%';
         removeBgCheck.checked = false;
         shadowCheck.checked = false;
-        tattooInput.value = ''; // Limpiar el input file
+        document.getElementById('photoInput').value = '';
+        document.getElementById('tattooInput').value = '';
+        document.getElementById('screen2').classList.add('hidden');
+        document.getElementById('screen1').classList.remove('hidden');
       });
 
       // Exportar imagen
@@ -474,9 +533,8 @@
       // Función auxiliar para actualizar dimensiones
       function updateTattooDimensions() {
         if (tattooImg) {
-          let baseScale = Math.min(300 / tattooImg.width, 300 / tattooImg.height);
-          tattooWidth = tattooImg.width * baseScale * tattooScale * widthScale;
-          tattooHeight = tattooImg.height * baseScale * tattooScale * heightScale;
+          tattooWidth = tattooImg.width * tattooScale * widthScale;
+          tattooHeight = tattooImg.height * tattooScale * heightScale;
           tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
           tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
         }
@@ -492,8 +550,11 @@
         introText.classList.remove('hidden');
       } else {
         introText.classList.add('hidden');
-        // Dibujar la fotografía
-        image(photoImg, 0, 0, canvasSize, canvasSize);
+        // Dibujar la fotografía en su tamaño original, escalado al lienzo
+        let photoScale = Math.min(canvasSize / photoImg.width, canvasSize / photoImg.height);
+        let photoWidth = photoImg.width * photoScale;
+        let photoHeight = photoImg.height * photoScale;
+        image(photoImg, (canvasSize - photoWidth) / 2, (canvasSize - photoHeight) / 2, photoWidth, photoHeight);
       }
 
       // Dibujar el tatuaje con opacidad, brillo y sombra
@@ -518,6 +579,9 @@
 
     function mousePressed() {
       // Ajustar la detección de clics considerando la rotación
+      if (processedTattooImg && !document.getElementById('screen1').classList.contains('hidden')) {
+        return; // No permitir arrastre en la pantalla 1
+      }
       if (processedTattooImg) {
         // Transformar las coordenadas del ratón al sistema rotado
         let centerX = tattooX + tattooWidth / 2;
