@@ -146,7 +146,7 @@
       </div>
 
       <!-- Personalización - Pantalla 2 -->
-      <div id="customizationStep" class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-lg shadow-lg w-full">
+      <div class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-lg shadow-lg w-full">
         <h1 class="text-xl sm:text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">¡Edita tu Tatuaje!</h1>
         
         <!-- Checkboxes para quitar fondo y sombra -->
@@ -360,6 +360,7 @@
       canvasSize = windowWidth < 640 ? Math.min(windowWidth - 32, 400) : windowWidth < 1024 ? 600 : 800;
       let canvas = createCanvas(canvasSize, canvasSize);
       canvas.parent('canvasContainer');
+      canvas.style('touch-action', 'none'); // Prevent scrolling on touch
 
       // Ajustar lienzo al cambiar tamaño de ventana
       windowResized = function() {
@@ -446,11 +447,11 @@
       const rotationPlus = document.getElementById('rotationPlus');
       const rotationValue = document.getElementById('rotationValue');
       rotationMinus.addEventListener('click', () => {
-        rotation = Math.max(0, rotation - 5);
+        rotation = (rotation - 5 + 360) % 360;
         rotationValue.textContent = `${Math.round(rotation)}°`;
       });
       rotationPlus.addEventListener('click', () => {
-        rotation = Math.min(360, rotation + 5);
+        rotation = (rotation + 5) % 360;
         rotationValue.textContent = `${Math.round(rotation)}°`;
       });
 
@@ -535,8 +536,8 @@
         if (tattooImg) {
           tattooWidth = tattooImg.width * tattooScale * widthScale;
           tattooHeight = tattooImg.height * tattooScale * heightScale;
-          tattooX = constrain(tattooX, 0, canvasSize - tattooWidth);
-          tattooY = constrain(tattooY, 0, canvasSize - tattooHeight);
+          tattooX = constrain(tattooX, -tattooWidth, canvasSize);
+          tattooY = constrain(tattooY, -tattooHeight, canvasSize);
         }
       }
     }
@@ -577,6 +578,11 @@
       }
     }
 
+    function touchStarted() {
+      // Prevent default touch behavior to avoid scrolling
+      return false;
+    }
+
     function mousePressed() {
       // Ajustar la detección de clics considerando la rotación
       if (processedTattooImg && !document.getElementById('screen1').classList.contains('hidden')) {
@@ -604,9 +610,9 @@
 
     function mouseDragged() {
       if (isDragging) {
-        // Actualizar posición del tatuaje, restringiendo al lienzo
-        tattooX = constrain(mouseX - offsetX, 0, canvasSize - tattooWidth);
-        tattooY = constrain(mouseY - offsetY, 0, canvasSize - tattooHeight);
+        // Actualizar posición del tatuaje, permitiendo negativos
+        tattooX = mouseX - offsetX;
+        tattooY = mouseY - offsetY;
       }
     }
 
